@@ -19,10 +19,7 @@ namespace HttpStream
 		{
 			RemoteFile = file;
 			var h = GetHead();
-
 			Length = h.ContentLength;
-
-			Console.Error.WriteLine( h.Headers );
 		}
 
 		static MethodInfo AddWithoutValidateMethod = typeof(WebHeaderCollection).GetMethod ("AddWithoutValidate", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -72,23 +69,18 @@ namespace HttpStream
 				AddWithoutValidateMethod.Invoke (req.Headers, new string[] { 
 				HttpRequestHeader.Range.ToString (),  range });
 
-				Console.Error.WriteLine ("requested range {0}", range);
 				var resp = req.GetResponse () as HttpWebResponse;
-
-				Console.Error.WriteLine( "got : \n" + resp.Headers );
 
 				try {
 					if (resp.StatusCode == HttpStatusCode.OK || resp.StatusCode == HttpStatusCode.PartialContent) {
 						var str = resp.GetResponseStream ();
 						int readbytes = 0;
 						int chunkbytes = 0;
-						Console.Error.WriteLine("Position {0}", Position );
 						do {
 							var off = offset + readbytes;
 							var size = count - readbytes;
 							chunkbytes = str.Read (buf, off, size);
 							readbytes += chunkbytes;
-							Console.Error.WriteLine("total {0} chunk {1}, offset {2}", readbytes, chunkbytes, off );
 						} while ( (chunkbytes > 0) && ( readbytes < count ) );
 
 						Position += readbytes;// - 1;
@@ -98,7 +90,6 @@ namespace HttpStream
 					throw new EndOfStreamException ();
 				} finally {
 					resp.Close ();
-					Console.Error.WriteLine("Position {0}", Position );
 				}
 			}
 		}
