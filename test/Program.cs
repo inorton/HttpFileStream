@@ -20,7 +20,9 @@ namespace test
 
 		public static void Run( int len )
 		{
-			var resource = new Uri("http://void.printf.net/~bredroll/ziptest/test" + len.ToString() + ".bin");
+            var file = Environment.GetEnvironmentVariable("TEST_FILE_PREFIX");
+
+			var resource = new Uri(file + len.ToString() + ".bin");
 			var t = new HttpFileStream( resource );
 			var sha1 = new SHA1Managed();
 			Console.Error.WriteLine( new SoapHexBinary( sha1.ComputeHash( t ) ).ToString() );
