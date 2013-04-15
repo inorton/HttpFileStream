@@ -28,14 +28,6 @@ namespace test
 			Console.Error.WriteLine( new SoapHexBinary( sha1.ComputeHash( t ) ).ToString() );
 			t.Close();
 
-			//var t2 = new HttpFileStream( resource );
-			//var rx = new byte[len];
-			//var rlen = t2.Read( rx, 0, rx.Length );
-
-			//Console.Error.WriteLine( "len = {0}", rlen );
-			//Console.Error.WriteLine( new SoapHexBinary( rx.Take(rlen).ToArray() ).ToString() );
-
-			//t2.Close();
 		}
 	}
 
