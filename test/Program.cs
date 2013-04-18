@@ -12,22 +12,41 @@ namespace test
 	{
 		public static void Main (string[] args)
 		{
-			Run (4096);
-			Console.Error.WriteLine("----");
-			Run (4097);
-			Console.Error.WriteLine("----");
+			Run ();
 		}
 
-		public static void Run( int len )
+		public static void Run(  )
 		{
             var file = Environment.GetEnvironmentVariable("TEST_FILE_PREFIX");
 
-			var resource = new Uri(file + len.ToString() + ".bin");
+            if ( file == null ) {
+                Console.Error.WriteLine("you need to set TEST_FILE_PREFIX");
+                return;
+            }
+            var resource = new Uri(file);
+            var start = DateTime.Now;
 			var t = new HttpFileStream( resource );
-			var sha1 = new SHA1Managed();
-			Console.Error.WriteLine( new SoapHexBinary( sha1.ComputeHash( t ) ).ToString() );
-			t.Close();
+            t.AdjustHTTPReadSize(16 * 1024 * 1024 ); // make range requests this big rather than the size of reads.
+			
+            if ( Environment.GetEnvironmentVariable("TEST_COMPUTE_SHA1") != null ){
+                var sha1 = new SHA1Managed();
+                Console.Error.WriteLine( new SoapHexBinary( sha1.ComputeHash( t ) ).ToString() );
+            } else {
+                // just transfer data
+                var tmp = new byte[1024*1024];
+                int rc = 0;
+                do { 
+                    rc = t.Read( tmp, 0, tmp.Length );
+                    var rdur = DateTime.Now.Subtract(start).TotalSeconds;
+                    var rrate = (int)(t.Position / rdur);
+                    Console.Error.WriteLine("\r{0} bytes transferred at {1} KBytes/s      ", t.Length, rrate / 1024 );
+                } while ( rc > 0 );
+            }
 
+			t.Close();
+            var dur = DateTime.Now.Subtract(start).TotalSeconds;
+            var rate = (int)(t.Length / dur);
+            Console.Error.WriteLine("{0} bytes transferred at {1} KBytes/s", t.Length, rate / 1024 );
 		}
 	}
 

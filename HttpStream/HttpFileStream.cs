@@ -5,12 +5,16 @@ namespace HttpStream
 {
 	public class HttpFileStream : Stream
 	{
-		HttpTool tool;
+        HttpTool Tool { get; set; }
 
 		public HttpFileStream ( Uri webfile )
 		{
-			tool = new HttpTool(webfile);
+			Tool = new HttpTool(webfile);
 		}
+
+        public void AdjustHTTPReadSize( int bytes ) {
+            Tool.SetDesiredHttpRangeSize( bytes );
+        }
 
 		#region implemented abstract members of Stream
 
@@ -23,21 +27,21 @@ namespace HttpStream
 		{
 			switch ( origin ){
 			case SeekOrigin.Begin:
-				tool.Position = offset;
+				Tool.Position = offset;
 				break;
 			case SeekOrigin.Current:
-				tool.Position += offset;
+				Tool.Position += offset;
 				break;
 			case SeekOrigin.End:
 				if ( offset > 0 ) 
 					throw new NotSupportedException();
-				tool.Position = tool.Length - offset;
+				Tool.Position = Tool.Length - offset;
 				break;
 
 			default:
 				break;
 			}
-			return tool.Position;
+			return Tool.Position;
 		}
 
 		public override void SetLength (long value)
@@ -47,7 +51,7 @@ namespace HttpStream
 
 		public override int Read (byte[] buffer, int offset, int count)
 		{
-			return tool.Read ( buffer, offset, count );
+			return Tool.Read ( buffer, offset, count );
 		}
 
 		public override void Write (byte[] buffer, int offset, int count)
@@ -75,22 +79,22 @@ namespace HttpStream
 
 		public override long Length {
 			get {
-				return tool.Length;
+				return Tool.Length;
 			}
 		}
 
 		public override long Position {
 			get {
-				return tool.Position;
+				return Tool.Position;
 			}
 			set {
-				tool.Position = value;
+				Tool.Position = value;
 			}
 		}
 
 		public override void Close ()
 		{
-			tool.Close();
+			Tool.Close();
 		}
 
 		#endregion
